@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#111827">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="中央林間ジム">
+<title>中央林間エニタイム｜1週間トレーニング</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Noto Sans JP",sans-serif;background:#f5f5f5;color:#171717}
+header{position:sticky;top:0;z-index:5;background:#fff;border-bottom:1px solid #ddd;padding:12px 14px calc(10px + env(safe-area-inset-top))}
+h1{font-size:18px;margin:0 0 3px}.sub{font-size:12px;color:#666}
+.days{display:flex;gap:7px;overflow-x:auto;padding:10px 10px;background:#fff}.days button{min-width:52px;height:46px;border:1px solid #ccc;border-radius:11px;background:#fff;font-weight:700}.days button.active{background:#111827;color:#fff;border-color:#111827}
+main{max-width:700px;margin:auto;padding:10px 10px 35px}.bar{display:flex;justify-content:space-between;align-items:center;margin:4px 2px 10px;font-size:13px;color:#666}
+.reset{border:1px solid #ccc;background:#fff;border-radius:8px;padding:8px 10px}
+.card{background:#fff;border:1px solid #ddd;border-radius:13px;margin:9px 0;overflow:hidden}.head{width:100%;padding:14px;text-align:left;background:#fff;border:0;font-size:16px;font-weight:700;display:flex;justify-content:space-between;gap:10px}.head small{display:block;color:#777;font-weight:500;margin-top:3px}.body{border-top:1px solid #eee;padding:12px}.form{font-size:13px;color:#555;line-height:1.8;margin-bottom:10px}.sets{display:grid;grid-template-columns:30px 1fr 1fr 1fr;gap:6px;align-items:center}.sets input{width:100%;height:43px;font-size:16px;border:1px solid #ccc;border-radius:8px;padding:7px}.num{text-align:center;color:#777;font-weight:700}.done{display:flex;align-items:center;gap:9px;margin-top:12px;font-weight:700}.done input{width:23px;height:23px}.finished{opacity:.55}.finished .head{text-decoration:line-through}.note{margin-top:12px}.note textarea{width:100%;min-height:80px;border:1px solid #ccc;border-radius:10px;padding:10px;font-size:16px}.hint{background:#fff;border:1px solid #ddd;border-radius:11px;padding:12px;margin-top:10px;font-size:12px;color:#666;line-height:1.6}
+</style>
+</head>
+<body>
+<header><h1>🏋️ 中央林間エニタイム</h1><div class="sub">ジム用・1週間トレーニング記録</div></header>
+<nav class="days" id="days"></nav>
+<main>
+<div class="bar"><span id="progress"></span><button class="reset" id="reset">今日をリセット</button></div>
+<div id="content"></div>
+<div class="note"><div class="sub">今日のメモ</div><textarea id="note" placeholder="体調・痛み・次回上げる重量など"></textarea></div>
+<div class="hint">RIR＝「あと何回できたか」。基本はRIR 1〜3。フォームが崩れる重量まで追い込まない。<br>※このページの記録は、このブラウザ内に保存されます。</div>
+</main>
+<script>
+const data=[
+["月","胸＋三頭＋腹＋有酸素",["ベンチプレス|3|8〜12|2〜3分|肩甲骨を寄せる・足を床・胸へ下ろす・バウンドなし","PLインクラインプレス|3|8〜12|90秒|シート確認・背中をパッド・胸を張る・ゆっくり戻す","ペクトラルフライ|3|10〜15|60〜90秒|シート確認・肩をすくめない・ゆっくり閉じる","トライセプスプレスダウン|3|10〜15|60秒|ケーブル高さ・肘を固定・肩をすくめない・ゆっくり戻す","オーバーヘッドケーブルトライセプス|2|10〜15|60秒|ケーブル高さ・肘を前方・上腕固定・反動なし","アブドミナル|3|12〜15|60秒|シート/パッド確認・腹筋で丸める・ゆっくり戻す"]],
+["火","背中＋二頭＋有酸素",["プルダウン|3|8〜12|2分|胸を張る・肩を下げる・肘を引く・反動なし","シーテッドプーリーロー|3|8〜12|90秒|胸を張る・肩をすくめない・肘を引く・ゆっくり戻す","ロー|3|10〜12|90秒|胸をパッド・肩を下げる・肘を引く・反動なし","アシストチン|2|8〜12|90秒|肩を下げる・胸を上へ・反動なし・ゆっくり","バイセップスカール|3|10〜15|60秒|肘固定・反動なし・肩を上げない"]],
+["水","脚＋腹",["バーベルスクワット|3|8〜12|2〜3分|ラック確認・背中を固める・膝とつま先・反動なし","リニアレッグプレス|3|10〜15|90秒|シート/足位置記録・膝をロックしない・深さ一定","レッグエクステンション|3|10〜15|60〜90秒|シート/パッド確認・反動なし・ゆっくり","レッグカール|3|10〜15|60〜90秒|シート/膝位置確認・反動なし・ゆっくり","アブドミナル|3|12〜15|60秒|腹筋で丸める・戻しもゆっくり"]],
+["木","休養・軽い有酸素",["軽いウォーキング|1|20〜30分|無理しない|息が上がりすぎない・痛みがあれば中止・軽く汗をかく程度"]],
+["金","胸＋肩＋三頭＋有酸素",["スミスインクラインプレス|3|8〜12|2分|シート確認・肩甲骨・胸を張る・反動なし","チェストプレス|3|10〜12|90秒|シート確認・胸を張る・肩をすくめない","ペクトラルフライ|2|12〜15|60秒|シート確認・肩をすくめない・ゆっくり","ショルダープレス|3|8〜12|90秒|シート確認・背中をパッド・肩をすくめない","ダンベルサイドレイズ|3|12〜15|60秒|軽め・肘を少し曲げる・肩をすくめない","トライセプスエクステンション|2|10〜15|60秒|肘固定・反動なし・ゆっくり"]],
+["土","背中＋二頭＋有酸素",["プルダウン|3|8〜12|2分|胸を張る・肩を下げる・肘を引く・反動なし","シーテッドプーリーロー|3|8〜12|90秒|胸を張る・肩をすくめない・肘を引く","ロー|2|10〜15|90秒|胸をパッド・肘を引く・反動なし","リアデルトイド|3|12〜15|60秒|肩をすくめない・肘で開く・反動なし","プリチャーカール|3|10〜15|60秒|肘固定・反動なし・下ろしをゆっくり","バイセップスカール|2|10〜15|60秒|肘固定・反動なし・肩を上げない"]],
+["日","脚＋腹＋有酸素",["リニアレッグプレス|3|8〜12|2分|足位置記録・膝をロックしない・深さ一定","レッグエクステンション|3|10〜15|60〜90秒|シート/パッド確認・反動なし","レッグカール|3|10〜15|60〜90秒|シート/膝位置確認・反動なし","ヒップアブダクター|2|12〜15|60秒|シート確認・背中安定・反動なし","PLシーテッドカーフ|3|12〜20|60秒|可動域大きく・反動なし・ゆっくり","アブドミナル|3|12〜15|60秒|腹筋で丸める・戻しもゆっくり"]]
+];
+let day=0;
+const key="churin-gym-v1";
+let store=JSON.parse(localStorage.getItem(key)||"{}");
+function state(){if(!store[day])store[day]={done:[],sets:{},note:""};return store[day]}
+function save(){localStorage.setItem(key,JSON.stringify(store))}
+function render(){
+ const s=state(), ex=data[day][2];
+ document.getElementById("days").innerHTML=data.map((d,i)=>`<button class="${i===day?"active":""}" data-i="${i}">${d[0]}</button>`).join("");
+ document.querySelectorAll(".days button").forEach(b=>b.onclick=()=>{day=+b.dataset.i;render()});
+ document.getElementById("progress").textContent=`${(s.done||[]).filter(Boolean).length} / ${ex.length} 種目完了`;
+ document.getElementById("note").value=s.note||"";
+ document.getElementById("content").innerHTML=`<h2 style="font-size:18px;margin:4px 2px 2px">${data[day][0]}曜日｜${data[day][1]}</h2>`+
+ ex.map((raw,i)=>{
+  const [name,n,reps,rest,form]=raw.split("|"), done=!!s.done[i];
+  const sets=Array.from({length:+n},(_,j)=>(s.sets?.[i]?.[j]||{w:"",r:"",rir:""}));
+  return `<section class="card ${done?"finished":""}">
+  <button class="head" data-open="${i}"><span>${i+1}. ${name}<small>${n}セット × ${reps}回｜休憩 ${rest}</small></span><span>${done?"✓":"＋"}</span></button>
+  <div class="body" style="display:none">
+  <div class="form"><b>フォーム：</b>${form.replaceAll("・","　☐ ")}</div>
+  <div class="sets"><div></div><div class="sub">重量</div><div class="sub">回数</div><div class="sub">RIR</div>
+  ${sets.map((x,j)=>`<div class="num">${j+1}</div><input inputmode="decimal" placeholder="kg" value="${x.w}" data-i="${i}" data-j="${j}" data-k="w"><input inputmode="numeric" placeholder="回" value="${x.r}" data-i="${i}" data-j="${j}" data-k="r"><input inputmode="numeric" placeholder="あと何回" value="${x.rir}" data-i="${i}" data-j="${j}" data-k="rir">`).join("")}</div>
+  <label class="done"><input type="checkbox" data-done="${i}" ${done?"checked":""}> この種目を完了</label>
+  </div></section>`
+ }).join("")+
+ `<section class="card"><div class="body" style="display:block"><b>🏃 有酸素</b><div class="form" style="margin-top:7px">目安：${day===2||day===3?"必要なら軽め":"トレッドミル 15〜20分"}</div><div class="sets"><div></div><div class="sub">速度 km/h</div><div class="sub">傾斜 %</div><div class="sub">時間 分</div><div></div><input inputmode="decimal" placeholder="速度"><input inputmode="decimal" placeholder="傾斜"><input inputmode="decimal" placeholder="時間"></div></div></section>`;
+ document.querySelectorAll("[data-open]").forEach(b=>b.onclick=()=>{const body=b.parentElement.querySelector(".body");body.style.display=body.style.display==="none"?"block":"none"});
+ document.querySelectorAll("[data-done]").forEach(c=>c.onchange=()=>{s.done[c.dataset.done]=c.checked;save();render()});
+ document.querySelectorAll("input[data-k]").forEach(inp=>inp.oninput=()=>{s.sets??={};s.sets[inp.dataset.i]??=[];s.sets[inp.dataset.i][inp.dataset.j]??={w:"",r:"",rir:""};s.sets[inp.dataset.i][inp.dataset.j][inp.dataset.k]=inp.value;save()});
+}
+document.getElementById("note").oninput=e=>{state().note=e.target.value;save()};
+document.getElementById("reset").onclick=()=>{if(confirm("今日の記録を全部リセットしますか？")){delete store[day];save();render()}};
+render();
+</script>
+</body></html>
